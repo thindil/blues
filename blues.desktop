@@ -1,0 +1,9 @@
+[Desktop Entry]
+Comment=Bluetooth sound
+Exec=sh /path/to/blues.sh
+Icon=preferences-system-bluetooth
+Categories=Settings;
+Name=Blues
+StartupNotify=false
+Terminal=false
+Type=Application
