@@ -52,12 +52,17 @@ enable_bluetooth () {
    echo $pass | sudo -S sysctl hw.snd.basename_clone=1
 }
 
-# Disable Bluetooth services, if the script should take care of them
+# Disable Bluetooth services, if the script should take care of them, and set
+# some needed kernel settings
 disable_bluetooth () {
    if [ $start_services -eq 1 ]; then
       echo $pass | sudo -S service bluetooth stop ubt0
       echo $pass | sudo -S service hcsecd stop
    fi
+   # For some reason, hw.snd.basename_clone is reseted to 0 which can cause
+   # problems when using the sound device with speakers (for example,
+   # with sndio). Thus, let to be sure that the setting is properly set.
+   echo $pass | sudo -S sysctl hw.snd.basename_clone=1
 }
 
 # Find enabled Bluetooth devices around and print to the console the received
