@@ -46,7 +46,11 @@ pass="$(zenity --password --title="Bluetooth")"
 # some needed kernel settings
 enable_bluetooth () {
    if [ $start_services -eq 1 ]; then
-      echo $pass | sudo -S service bluetooth start ubt0 || sudo service bluetooth start ubt0
+      result=1
+      until [ $result -lt 1 ]; do
+         echo $pass | sudo -S service bluetooth start ubt0
+         result=$?
+      done
       echo $pass | sudo -S service hcsecd onestart
    fi
    echo $pass | sudo -S sysctl hw.snd.basename_clone=1
