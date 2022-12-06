@@ -40,7 +40,15 @@ start_services=1
 pulseaudio_support=0
 
 # Ask for password to execute sudo command via zenity password dialog
-pass="$(zenity --password --title="Bluetooth")"
+pass="$(zenity --password --title="Bluetooth sound")"
+
+# If the user entered an empty password, or cancelled the password dialog,
+# show the error dialog and stop the script.
+if [ -z $pass ]
+then
+   zenity --error --text="Cancelled." --title="Bluetooth sound"
+   return 1
+fi
 
 # Enable Bluetooth services, if the script should take care of them, and set
 # some needed kernel settings
