@@ -47,7 +47,15 @@ pass="$(zenity --password --title="Bluetooth sound")"
 if [ -z $pass ]
 then
    zenity --error --text="Cancelled." --title="Bluetooth sound"
-   return 1
+   exit 1
+fi
+
+# Check if the user entered the proper password. If not, show the dialog with
+# the information about the problem and stop the script.
+echo $pass | sudo -S ls $HOME > /dev/null
+if [ $? -gt 0 ]; then
+   zenity --error --text="Invalid password entered." --title="Bluetooth"
+   exit 1
 fi
 
 # Enable Bluetooth services, if the script should take care of them, and set
