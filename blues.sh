@@ -38,6 +38,9 @@ start_services=1
 # Do you need the support for PulseAudio. Set it to 1 if yes, otherwise
 # (default) set it to 0.
 pulseaudio_support=0
+# The amount of attempts to start the Bluetooth service. Sometimes it not start
+# at the first try. Recommended value is between 2 and 10 attempts.
+bluetooth_attempts=5
 
 # Ask for password to execute sudo command via zenity password dialog
 pass="$(zenity --password --title="Bluetooth sound")"
@@ -54,7 +57,7 @@ fi
 # the information about the problem and stop the script.
 echo $pass | sudo -S ls $HOME > /dev/null
 if [ $? -gt 0 ]; then
-   zenity --error --text="Invalid password entered." --title="Bluetooth"
+   zenity --error --text="Invalid password entered." --title="Bluetooth sound"
    exit 1
 fi
 
@@ -63,10 +66,17 @@ fi
 enable_bluetooth () {
    if [ $start_services -eq 1 ]; then
       result=1
-      until [ $result -lt 1 ]; do
+      until [ $result -lt 1 ] || [ $bluetooth_attempts -lt 1 ]; do
          echo $pass | sudo -S service bluetooth start ubt0
          result=$?
+         bluetooth_attempts=`expr $bluetooth_attempts - 1`
       done
+      # If starting the Bluetooth service was unsuccesfull, show the error dialog
+      # and stop the script
+      if [ $bluetooth_attempts -lt 1 ]; then
+         zenity --error --text="Can't start Bluetooth service." --title="Bluetooth sound"
+         exit 1
+      fi
       echo $pass | sudo -S service hcsecd onestart
    fi
    echo $pass | sudo -S sysctl hw.snd.basename_clone=1
