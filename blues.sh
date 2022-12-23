@@ -126,10 +126,10 @@ fi
 
 # Turn on the Bluetooth sound device, mute speakers and set all needed
 # settings
-# Mute the standard speakers
-mixer pcm 0
 # Enable Bluetooth services if needed
 enable_bluetooth
+# Mute the standard speakers
+mixer pcm 0
 # Connect to the Bluetooth device
 echo $pass | sudo -S hccontrol -n ubt0hci create_connection $BD_ADDR
 # Start virtual sound device
