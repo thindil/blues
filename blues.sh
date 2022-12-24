@@ -47,7 +47,7 @@ pass="$(zenity --password --title="Bluetooth sound")"
 
 # If the user entered an empty password, or cancelled the password dialog,
 # show the error dialog and stop the script.
-if [ -z $pass ]
+if [ -z "$pass" ]
 then
    zenity --error --text="Cancelled." --title="Bluetooth sound"
    exit 1
@@ -55,8 +55,7 @@ fi
 
 # Check if the user entered the proper password. If not, show the dialog with
 # the information about the problem and stop the script.
-echo $pass | sudo -S ls $HOME > /dev/null
-if [ $? -gt 0 ]; then
+if ! echo "$pass" | sudo -S ls "$HOME" > /dev/null; then
    zenity --error --text="Invalid password entered." --title="Bluetooth sound"
    exit 1
 fi
@@ -67,9 +66,9 @@ enable_bluetooth () {
    if [ $start_services -eq 1 ]; then
       result=1
       until [ $result -lt 1 ] || [ $bluetooth_attempts -lt 1 ]; do
-         echo $pass | sudo -S service bluetooth start ubt0
+         echo "$pass" | sudo -S service bluetooth start ubt0
          result=$?
-         bluetooth_attempts=`expr $bluetooth_attempts - 1`
+         bluetooth_attempts=$((bluetooth_attempts - 1))
       done
       # If starting the Bluetooth service was unsuccesfull, show the error dialog
       # and stop the script
@@ -77,22 +76,22 @@ enable_bluetooth () {
          zenity --error --text="Can't start Bluetooth service." --title="Bluetooth sound"
          exit 1
       fi
-      echo $pass | sudo -S service hcsecd onestart
+      echo "$pass" | sudo -S service hcsecd onestart
    fi
-   echo $pass | sudo -S sysctl hw.snd.basename_clone=1
+   echo "$pass" | sudo -S sysctl hw.snd.basename_clone=1
 }
 
 # Disable Bluetooth services, if the script should take care of them, and set
 # some needed kernel settings
 disable_bluetooth () {
    if [ $start_services -eq 1 ]; then
-      echo $pass | sudo -S service bluetooth stop ubt0
-      echo $pass | sudo -S service hcsecd stop
+      echo "$pass" | sudo -S service bluetooth stop ubt0
+      echo "$pass" | sudo -S service hcsecd stop
    fi
    # For some reason, hw.snd.basename_clone is reseted to 0 which can cause
    # problems when using the sound device with speakers (for example,
    # with sndio). Thus, let to be sure that the setting is properly set.
-   echo $pass | sudo -S sysctl hw.snd.basename_clone=1
+   echo "$pass" | sudo -S sysctl hw.snd.basename_clone=1
 }
 
 # Find enabled Bluetooth devices around and print to the console the received
@@ -107,13 +106,13 @@ fi
 
 # Turn off the Bluetooth sound device, restore volume level for the standard
 # speakers and bring back any other settings if needed.
-if [ "$(cat /dev/sndstat | grep 'dsp: <Virtual OSS')" = "dsp: <Virtual OSS> (play/rec)" ]; then
+if [ "$(< /dev/sndstat grep 'dsp: <Virtual OSS')" = "dsp: <Virtual OSS> (play/rec)" ]; then
    # Stop PulseAudio if needed
    if [ $pulseaudio_support -eq 1 ]; then
       killall pacat
    fi
    # Turn off the Bluetooth device
-   echo $pass | sudo -S /usr/bin/killall virtual_oss
+   echo "$pass" | sudo -S /usr/bin/killall virtual_oss
    # Disable Bluetooth services if needed
    disable_bluetooth
    # Unmute the speakers
@@ -131,9 +130,9 @@ enable_bluetooth
 # Mute the standard speakers
 mixer pcm 0
 # Connect to the Bluetooth device
-echo $pass | sudo -S hccontrol -n ubt0hci create_connection $BD_ADDR
+echo "$pass" | sudo -S hccontrol -n ubt0hci create_connection $BD_ADDR
 # Start virtual sound device
-echo $pass | sudo -S virtual_oss -T /dev/sndstat -C 2 -c 2 -r 48000 -b 16 -s 20ms -P /dev/bluetooth/$BD_ADDR -R /dev/null -w vdsp.ctl -d dsp -l mixer &
+echo "$pass" | sudo -S virtual_oss -T /dev/sndstat -C 2 -c 2 -r 48000 -b 16 -s 20ms -P /dev/bluetooth/$BD_ADDR -R /dev/null -w vdsp.ctl -d dsp -l mixer &
 # Start PulseAudio support if needed
 if [ $pulseaudio_support -eq 1 ]; then
    pacat --record -d oss_output.dsp2.monitor > /dev/dsp &
