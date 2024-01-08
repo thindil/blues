@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright © 2022 Bartek Jasicki <thindil@laeran.pl>
+# Copyright © 2022-2024 Bartek Jasicki
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -115,8 +115,8 @@ if [ "$(< /dev/sndstat grep 'dsp: <Virtual OSS')" = "dsp: <Virtual OSS> (play/re
    echo "$pass" | sudo -S /usr/bin/killall virtual_oss
    # Disable Bluetooth services if needed
    disable_bluetooth
-   # Unmute the speakers
-   mixer pcm 100
+   # Unmute the speakers, on FreeBSD 13 or below, replace the value with 100
+   mixer pcm 1.0
    # Show notification about finished the script
    zenity --notification --text="Bluetooth sound device disabled"
    # Exit from the script
@@ -127,8 +127,8 @@ fi
 # settings
 # Enable Bluetooth services if needed
 enable_bluetooth
-# Mute the standard speakers
-mixer pcm 0
+# Mute the standard speakers, on FreeBSD 13 or below, replace the value with 0
+mixer pcm 0.0
 # Connect to the Bluetooth device
 echo "$pass" | sudo -S hccontrol -n ubt0hci create_connection $BD_ADDR
 # Start virtual sound device
